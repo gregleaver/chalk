@@ -76,10 +76,10 @@ module Chalk
 
         # Refactor this out so it doesn't use the tab group URL which is only valid on Eastern if you are using the defaults.
         def get_courses_for(student)
-          courses_page = agent.get(base_url + "/webapps/portal/execute/tabs/tabAction?action=refreshAjaxModule&modId=_27_1&tabId=_2_1&tab_tab_group_id=_2_1")
+          courses_page = agent.get(base_url + "/webapps/gradebook/do/student/viewCourses")
           courses_page = Nokogiri::HTML::DocumentFragment.parse(courses_page.body)
-          courses = courses_page.css('td a')
-          student.courses = courses.inject([]){|array, course| array << [course.inner_text,course["href"]]}
+          courses = courses_page.css('h3 a')
+          student.courses = courses.inject([]){|array, course| array << [course.inner_text.strip!,course["href"]]}
         end
 
         def login!(student)
