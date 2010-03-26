@@ -2,7 +2,6 @@
 
 require 'chalk'
 
-Chalk::Blackboard.url = "https://+ + ARGV[0]
+Chalk::Blackboard.url = "https://" + ARGV[0]
 student = Chalk::Blackboard.login(ARGV[1], ARGV[2])
-puts student.inspect
-puts student.courses.map(&:first)
+puts student.courses.map(&:first).inspect

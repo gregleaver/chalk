@@ -18,16 +18,34 @@ module Chalk
   end
   
   class Course
-    attr_accessor :department, :number, :season, :year, :title
+    attr_accessor :department, :number, :season, :year, :title, :section, :assignments
     
+    module Regex
+      DEPARTMENT_AND_NUMBER = /^([A-Z]{3}) ([0-9]{3})/
+    end
+
+    class << self
+      def parse(course_string)
+        course = Course.new
+        course_string.gsub!(/[,():*]/,"")
+        course_array = course_string.scan(/([A-Za-z]+|[0-9]+)/).flatten
+        course.department, course.number = course_array.slice!(0..1)
+        season_index = course_array.rindex("Spring"||"Summer"||"Fall"||"Winter")
+        course.season, course.year = course_array.slice(season_index..season_index+1)
+        course_array = course_array.slice!(0..season_index-1)
+        course_array = course_array.select{|string| !string.scan(/([A-Za-z]+)/).empty?}.flatten
+        course.title = course_array.join(" ")
+        course
+      end
+    end
   end
 
   class Assignment
-    
+    attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
+
   end
 
   module Blackboard
-     
     def self.url=(base_url)
       @@url = base_url
     end
@@ -74,12 +92,11 @@ module Chalk
           base_url + "/webapps/login/"
         end
 
-        # Refactor this out so it doesn't use the tab group URL which is only valid on Eastern if you are using the defaults.
         def get_courses_for(student)
           courses_page = agent.get(base_url + "/webapps/gradebook/do/student/viewCourses")
           courses_page = Nokogiri::HTML::DocumentFragment.parse(courses_page.body)
           courses = courses_page.css('h3 a')
-          student.courses = courses.inject([]){|array, course| array << [course.inner_text.strip!,course["href"]]}
+          student.courses = courses.inject([]){|array, course| array << [Course.parse(course.inner_text.strip!),course["href"]]}
         end
 
         def login!(student)
