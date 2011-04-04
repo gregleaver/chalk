@@ -42,7 +42,6 @@ module Chalk
 
   class Assignment
     attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
-
   end
 
   module Blackboard

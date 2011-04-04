@@ -1,7 +1,14 @@
 #! /usr/bin/ruby
 
-require 'chalk'
+require 'src/chalk'
+require 'highline/import'
 
-Chalk::Blackboard.url = "https://" + ARGV[0]
-student = Chalk::Blackboard.login(ARGV[1], ARGV[2])
-puts student.courses.map(&:first).inspect
+#Chalk::Blackboard.url = "https://" + ARGV[0]
+#student = Chalk::Blackboard.login(ARGV[1], ARGV[2])
+#puts student.courses.map(&:first).inspect
+
+puts "Chalk Test"
+site = ask("Blackboard Server: "){|q| q.echo = true}
+username = ask("Username: "){|q| q.echo = true}
+password = ask("Enter Password: "){|q|q.echo = "*"}
+
