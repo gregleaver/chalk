@@ -1,0 +1,6 @@
+Screen Scraped Blackboard API.
+
+Dependencies:
+    -nokogiri
+    -mechanize
+    -highline
