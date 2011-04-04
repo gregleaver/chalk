@@ -3,12 +3,11 @@
 require 'src/chalk'
 require 'highline/import'
 
-#Chalk::Blackboard.url = "https://" + ARGV[0]
-#student = Chalk::Blackboard.login(ARGV[1], ARGV[2])
-#puts student.courses.map(&:first).inspect
-
 puts "Chalk Test"
 site = ask("Blackboard Server: "){|q| q.echo = true}
 username = ask("Username: "){|q| q.echo = true}
 password = ask("Enter Password: "){|q|q.echo = "*"}
 
+Chalk::Blackboard.url = "https://" + site
+student = Chalk::Blackboard.login(username,password)
+student.courses.map{|c| puts c[0]}
