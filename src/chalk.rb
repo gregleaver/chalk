@@ -1,3 +1,4 @@
+# class Blackboard
 # class Student
 # class Course
 # class Assignment
@@ -19,7 +20,7 @@ module Chalk
   end
 
   class Course
-    attr_accessor :department, :number, :season, :year, :title, :section, :assignments
+    attr_accessor :department, :number, :season, :year, :title, :section, :assignments, :url
 
     def to_s
       "Course:["+self.department + self.number + " " + self.title+"]"
@@ -46,6 +47,14 @@ module Chalk
 
   class Assignment
     attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
+
+    def Assignment.parse(text)
+      ass = Assignment.new
+    end
+
+    def to_s
+      "Assignment[]"
+    end
   end
 
   class Blackboard
@@ -95,8 +104,25 @@ module Chalk
         courses_page = agent.get(@base_url + "/webapps/gradebook/do/student/viewCourses")
         courses_page = Nokogiri::HTML::DocumentFragment.parse(courses_page.body)
         courses = courses_page.css('h3 a')
-        student.courses = courses.inject([]){|array, course| array << [Course.parse(course.inner_text),course["href"]] }
-        student.courses.reject!{|item| item[0].nil?}
+        student.courses = courses.inject([]) do |courses, course| 
+          c = Course.parse(course.inner_text)
+          if c
+            courses << c # Add Course
+            # Get Assignments
+            assignments_page = agent.get(course['href'])
+            assignments_page = Nokogiri::HTML::DocumentFragment.parse(assignments_page.body)
+            assignments = assignments_page.css('.mygrades tr')
+            assignments.shift
+            c.assignments = assignments.inject([]) do |assignments, assignment|
+              a = Assignment.parse(assignment.inner_text)
+              if a
+                assignments << a
+              end
+              assignments
+            end
+          end
+          courses
+        end
       end
 
       def login!(student)

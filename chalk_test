@@ -8,6 +8,17 @@ site = ask("Blackboard Server: "){|q| q.echo = true}
 username = ask("Username: "){|q| q.echo = true}
 password = ask("Enter Password: "){|q|q.echo = "*"}
 
+puts "Connecting to https://#{site}"
 bb = Chalk::Blackboard.new("https://" + site)
+puts "Loading data..."
 student = bb.login(username,password)
-student.courses.map{|c| puts c[0]}
+puts "Ready."
+
+choose do |menu|
+  menu.prompt = "Select Course"
+  student.courses.map do |c| 
+    menu.choice(c) do 
+      c.assignments.map{ |a| puts a}
+    end
+  end
+end
