@@ -19,7 +19,10 @@ loop do
     menu.prompt = "Select Course"
     student.courses.map do |c| 
       menu.choice(c) do 
+        puts "----------"
+        puts "#{c} Grades:"
         c.assignments.map{ |a| puts a}
+        puts "----------"
       end
     end
     menu.choice(:Quit){ exit }

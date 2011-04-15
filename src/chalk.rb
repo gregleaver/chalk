@@ -31,7 +31,7 @@ module Chalk
   end
 
   class Assignment
-    attr_accessor :title, :due_on, :graded_on, :category, :description, :comments
+    attr_accessor :title, :due_on, :last_updated, :category, :description, :comments
     attr_reader :points_attained, :points_possible
 
     def initialize
@@ -60,7 +60,11 @@ module Chalk
     end
 
     def to_s
-      "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%]"
+      if @last_updated != ''
+        "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%] as of #{@last_updated}"
+      else
+        "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%]"
+      end
     end
   end
 
@@ -128,10 +132,11 @@ module Chalk
       end
 
       def parse_assignment(data)
-#    attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
         assignment = Assignment.new
         assignment.title = data.at_xpath('./th').text()
         data = data.xpath('./td')
+        assignment.due_on = data[1].text()
+        assignment.last_updated = data[2].text()
         assignment.points_attained = data[3].text()
         assignment.points_possible = data[4].text()
         assignment
