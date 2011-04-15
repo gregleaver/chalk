@@ -27,33 +27,40 @@ module Chalk
     end
 
     def Course.parse(course_string)
-      course_array = course_string.split(/ - /)
-      if course_array.length == 3
-        if course_array[0].match(/[A-Z]{3}\d{3}/)
-          course_code = course_array[0].strip
-          course_title = course_array[1].strip
-          course_sem = course_array[2].strip
-          course = Course.new
-          course.department = course_code[0,3]
-          course.number = course_code[3,3]
-          course.season = course_sem[0,1]
-          course.year = course_sem[1,4]
-          course.title = course_title
-          course
-        end
-      end
     end
   end
 
   class Assignment
-    attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
+    attr_accessor :title, :due_on, :graded_on, :category, :description, :comments
+    attr_reader :points_attained, :points_possible
+
+    def initialize
+      @points_attained = 0.0
+      @points_possible = 0.0
+    end
+
+    def points_attained=(points)
+      @points_attained = points.to_f
+    end
+
+    def points_possible=(points)
+      @points_possible = points.to_f
+    end
+
+    def percentage
+      if @points_possible > 0
+        (@points_attained / @points_possible * 10000).round / 100.0
+      else
+        0.0
+      end
+    end
 
     def Assignment.parse(text)
       ass = Assignment.new
     end
 
     def to_s
-      "Assignment[]"
+      "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%]"
     end
   end
 
@@ -100,21 +107,51 @@ module Chalk
         @base_url + "/webapps/login/"
       end
 
+      def parse_course(data)
+        course_string = data.text()
+        course_array = course_string.split(/ - /)
+        if course_array.length == 3
+          if course_array[0].match(/[A-Z]{3}\d{3}/)
+            course = Course.new
+            course.url = data['href']
+            course_code = course_array[0].strip
+            course_title = course_array[1].strip
+            course_sem = course_array[2].strip
+            course.department = course_code[0,3]
+            course.number = course_code[3,3]
+            course.season = course_sem[0,1]
+            course.year = course_sem[1,4]
+            course.title = course_title
+            course
+          end
+        end
+      end
+
+      def parse_assignment(data)
+#    attr_accessor :title, :due_on, :graded_on, :points_attained, :points_possible, :category, :description, :comments
+        assignment = Assignment.new
+        assignment.title = data.at_xpath('./th').text()
+        data = data.xpath('./td')
+        assignment.points_attained = data[3].text()
+        assignment.points_possible = data[4].text()
+        assignment
+      end
+
       def get_courses_for(student)
         courses_page = agent.get(@base_url + "/webapps/gradebook/do/student/viewCourses")
-        courses_page = Nokogiri::HTML::DocumentFragment.parse(courses_page.body)
-        courses = courses_page.css('h3 a')
+        courses_page = Nokogiri::HTML(courses_page.body,'UTF-8')
+        courses = courses_page.xpath('//h3/a')
         student.courses = courses.inject([]) do |courses, course| 
-          c = Course.parse(course.inner_text)
+          c = parse_course(course)
           if c
             courses << c # Add Course
             # Get Assignments
-            assignments_page = agent.get(course['href'])
-            assignments_page = Nokogiri::HTML::DocumentFragment.parse(assignments_page.body)
-            assignments = assignments_page.css('.mygrades tr')
+            assignments_page = agent.get(c.url)
+            assignments_page = Nokogiri::HTML(assignments_page.body,'UTF-8')
+            assignments = assignments_page.xpath('//*[@class=\'attachments mygrades\']/tbody/tr')
             assignments.shift
             c.assignments = assignments.inject([]) do |assignments, assignment|
-              a = Assignment.parse(assignment.inner_text)
+              a = parse_assignment(assignment)
               if a
                 assignments << a
               end

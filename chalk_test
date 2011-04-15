@@ -14,11 +14,14 @@ puts "Loading data..."
 student = bb.login(username,password)
 puts "Ready."
 
-choose do |menu|
-  menu.prompt = "Select Course"
-  student.courses.map do |c| 
-    menu.choice(c) do 
-      c.assignments.map{ |a| puts a}
+loop do
+  choose do |menu|
+    menu.prompt = "Select Course"
+    student.courses.map do |c| 
+      menu.choice(c) do 
+        c.assignments.map{ |a| puts a}
+      end
     end
+    menu.choice(:Quit){ exit }
   end
 end
