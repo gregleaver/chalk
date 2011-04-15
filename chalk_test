@@ -8,6 +8,6 @@ site = ask("Blackboard Server: "){|q| q.echo = true}
 username = ask("Username: "){|q| q.echo = true}
 password = ask("Enter Password: "){|q|q.echo = "*"}
 
-Chalk::Blackboard.url = "https://" + site
-student = Chalk::Blackboard.login(username,password)
+bb = Chalk::Blackboard.new("https://" + site)
+student = bb.login(username,password)
 student.courses.map{|c| puts c[0]}
