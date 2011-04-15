@@ -23,10 +23,17 @@ module Chalk
     attr_accessor :department, :number, :season, :year, :title, :section, :assignments, :url
 
     def to_s
-      "Course:["+self.department + self.number + " " + self.title+"]"
+      "#{department}#{number} #{title}: #{average}%"
     end
 
-    def Course.parse(course_string)
+    def average
+      attained = assignments.inject(0){|sum,assignment| sum += assignment.points_attained}
+      possible = assignments.inject(0){|sum,assignment| sum += assignment.points_possible}
+      if possible > 0
+        (attained / possible * 10000).round / 100.0
+      else
+        0.0
+      end
     end
   end
 
@@ -55,15 +62,11 @@ module Chalk
       end
     end
 
-    def Assignment.parse(text)
-      ass = Assignment.new
-    end
-
     def to_s
       if @last_updated != ''
-        "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%] as of #{@last_updated}"
+        "#@title: #@points_attained/#@points_possible, #{percentage}%  - as of #{@last_updated}"
       else
-        "Assignment[#@title, #@points_attained/#@points_possible, #{percentage}%]"
+        "#@title: #@points_attained/#@points_possible, #{percentage}%"
       end
     end
   end

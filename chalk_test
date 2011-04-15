@@ -20,8 +20,10 @@ loop do
     student.courses.map do |c| 
       menu.choice(c) do 
         puts "----------"
-        puts "#{c} Grades:"
+        puts
+        puts "#{c}"
         c.assignments.map{ |a| puts a}
+        puts
         puts "----------"
       end
     end
